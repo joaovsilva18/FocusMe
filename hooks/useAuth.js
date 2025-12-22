@@ -97,10 +97,7 @@ const USERS = [
 ];
 
 export function AuthProvider({ children }) {
-  // Usuário logado
   const [usuario, setUsuario] = useState(null);
-
-  // Lista global de todos os usuários
   const [usuarios, setUsuarios] = useState(USERS);
 
   const login = (email, senha) => {
@@ -116,9 +113,7 @@ export function AuthProvider({ children }) {
     return { ok: false, msg: "Email ou senha incorretos!" };
   };
 
-  const logout = () => {
-    setUsuario(null);
-  };
+  const logout = () => setUsuario(null);
 
   const adicionarXp = (id, valor) => {
     setUsuarios((prev) =>
@@ -132,6 +127,42 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const atualizarNome = (id, novoNome) => {
+    setUsuarios((prev) =>
+      prev.map((u) =>
+        u.id === id ? { ...u, nome: novoNome } : u
+      )
+    );
+
+    if (usuario?.id === id) {
+      setUsuario((prev) => ({ ...prev, nome: novoNome }));
+    }
+  };
+
+  const atualizarSenha = (id, novaSenha) => {
+    setUsuarios((prev) =>
+      prev.map((u) =>
+        u.id === id ? { ...u, senha: novaSenha } : u
+      )
+    );
+
+    if (usuario?.id === id) {
+      setUsuario((prev) => ({ ...prev, senha: novaSenha }));
+    }
+  };
+
+  const atualizarAvatar = (id, novoAvatar) => {
+    setUsuarios((prev) =>
+      prev.map((u) =>
+        u.id === id ? { ...u, avatar: novoAvatar } : u
+      )
+    );
+
+    if (usuario?.id === id) {
+      setUsuario((prev) => ({ ...prev, avatar: novoAvatar }));
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -140,6 +171,9 @@ export function AuthProvider({ children }) {
         login,
         logout,
         adicionarXp,
+        atualizarNome,
+        atualizarSenha,
+        atualizarAvatar,
       }}
     >
       {children}
