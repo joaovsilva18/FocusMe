@@ -10,6 +10,11 @@ import Navbar from "@/components/Navbar";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function Telaconfig() {
+  const {
+    usuario: currentUser,
+    atualizarNome,
+    atualizarSenha,
+  } = useAuth();
 
   const [avatarUrl, setAvatarUrl] = useState("");
   const [userName, setUserName] = useState("");
@@ -25,8 +30,6 @@ export default function Telaconfig() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passError, setPassError] = useState("");
 
-  const { usuario: currentUser, usuarios: allUsu, login: entrar, logout: deslogar } = useAuth();
-
   const nameFirstRef = useRef(null);
   const passFirstRef = useRef(null);
 
@@ -38,7 +41,7 @@ export default function Telaconfig() {
   }, [currentUser]);
 
   function salvarNome() {
-    if (newName.trim() === "" || confirmName.trim() === "") {
+    if (!newName || !confirmName) {
       setNameError("Preencha os dois campos.");
       return;
     }
@@ -48,16 +51,9 @@ export default function Telaconfig() {
       return;
     }
 
-    setUsuarios((prev) =>
-      prev.map((u) =>
-        u.id === currentUser.id ? { ...u, nome: newName } : u
-      )
-    );
-
-    setUsuario((prev) => ({ ...prev, nome: newName }));
+    atualizarNome(currentUser.id, newName);
 
     setUserName(newName);
-
     setNewName("");
     setConfirmName("");
     setNameError("");
@@ -65,7 +61,7 @@ export default function Telaconfig() {
   }
 
   function salvarSenha() {
-    if (newPassword.trim() === "" || confirmPassword.trim() === "") {
+    if (!newPassword || !confirmPassword) {
       setPassError("Preencha os dois campos.");
       return;
     }
@@ -74,12 +70,8 @@ export default function Telaconfig() {
       setPassError("As senhas não coincidem.");
       return;
     }
-    setUsuarios((prev) =>
-      prev.map((u) =>
-        u.id === currentUser.id ? { ...u, senha: newPassword } : u
-      )
-    );
-    setUsuario((prev) => ({ ...prev, senha: newPassword }));
+
+    atualizarSenha(currentUser.id, newPassword);
 
     setNewPassword("");
     setConfirmPassword("");
@@ -89,7 +81,7 @@ export default function Telaconfig() {
 
   if (!currentUser) {
     return (
-      <div className="w-full h-screen flex items-center justify-center text-white text-2xl">
+      <div className="w-full h-screen flex items-center justify-center text-white text-2xl bg-[#7c3aed]">
         Você não está logado.
       </div>
     );
@@ -99,24 +91,22 @@ export default function Telaconfig() {
     <>
       <Navbar />
 
-      <div className="bg-[#7c3aed] min-h-screen pt-20 px-6 flex justify-center items-start">
+      <div className="bg-[#7c3aed] min-h-screen pt-20 px-6 flex justify-center">
         <div className="bg-white w-[95%] max-w-4xl mt-3 rounded-3xl shadow-xl p-8 sm:p-28 relative mx-auto">
-          
+
           {/* BOTÃO VOLTAR */}
-          <Link href="./" className="w-full block">
-            <button className="absolute left-8 top-8">
-              <svg
-                width="30"
-                height="30"
-                fill="none"
-                stroke="#7c3aed"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M18 22L10 14L18 6" />
-              </svg>
-            </button>
+          <Link href="./" className="absolute left-8 top-8">
+            <svg
+              width="30"
+              height="30"
+              fill="none"
+              stroke="#7c3aed"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M18 22L10 14L18 6" />
+            </svg>
           </Link>
 
           {/* AVATAR */}
@@ -124,20 +114,20 @@ export default function Telaconfig() {
             <Image
               src={avatarUrl}
               alt="avatar"
-              className="w-28 h-28 sm:w-32 sm:h-32 rounded-full ring-8 ring-[#7c3aed] object-cover"
               width={120}
               height={120}
+              className="w-28 h-28 sm:w-32 sm:h-32 rounded-full ring-8 ring-[#7c3aed] object-cover"
             />
 
             <Link href="/Telaconfig/Avatares">
-              <Button className="mt-6 bg-[#7c3aed] hover:bg-purple-800 px-8 py-2 rounded-full shadow text-white">
+              <Button className="mt-6 bg-[#7c3aed] hover:bg-purple-800 px-8 py-2 rounded-full text-white">
                 Alterar
               </Button>
             </Link>
           </div>
 
           {/* ALTERAR NOME */}
-          <div className="flex justify-between bg-gray-200 px-6 py-4 rounded-full mb-4">
+          <div className="flex justify-between items-center bg-gray-200 px-6 py-4 rounded-full mb-4">
             <p>
               Alterar nome de usuário <br />
               <span className="font-semibold">{userName}</span>
@@ -152,9 +142,9 @@ export default function Telaconfig() {
           </div>
 
           {/* ALTERAR SENHA */}
-          <div className="flex justify-between bg-gray-200 px-6 py-4 rounded-full">
+          <div className="flex justify-between items-center bg-gray-200 px-6 py-4 rounded-full">
             <p>
-              Alterar Senha <br /> ************
+              Alterar senha <br /> ************
             </p>
 
             <Button
@@ -167,7 +157,7 @@ export default function Telaconfig() {
 
           {/* MODAL NOME */}
           {isNameModalOpen && (
-            <div className="fixed inset-0 bg-black/30 flex items-center justify-center">
+            <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
               <div className="bg-white p-8 rounded-2xl w-[90%] max-w-lg shadow-xl">
                 <h2 className="text-xl font-semibold mb-6">
                   Alterar nome de usuário
@@ -178,7 +168,6 @@ export default function Telaconfig() {
                   ref={nameFirstRef}
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
-                  placeholder="Digite o novo nome"
                   className="rounded-full mb-4 bg-gray-300"
                 />
 
@@ -186,17 +175,21 @@ export default function Telaconfig() {
                 <Input
                   value={confirmName}
                   onChange={(e) => setConfirmName(e.target.value)}
-                  placeholder="Digite novamente para confirmar"
                   className="rounded-full mb-4 bg-gray-300"
                 />
 
-                {nameError && <p className="text-red-500">{nameError}</p>}
+                {nameError && (
+                  <p className="text-red-500 text-sm">{nameError}</p>
+                )}
 
                 <div className="flex justify-end gap-4 mt-6">
                   <Button variant="ghost" onClick={() => setIsNameModalOpen(false)}>
                     Cancelar
                   </Button>
-                  <Button className="bg-[#7c3aed] hover:bg-purple-800" onClick={salvarNome}>
+                  <Button
+                    className="bg-[#7c3aed] hover:bg-purple-800"
+                    onClick={salvarNome}
+                  >
                     Salvar
                   </Button>
                 </div>
@@ -206,9 +199,11 @@ export default function Telaconfig() {
 
           {/* MODAL SENHA */}
           {isPasswordModalOpen && (
-            <div className="fixed inset-0 bg-black/30 flex items-center justify-center">
+            <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
               <div className="bg-white p-8 rounded-2xl w-[90%] max-w-lg shadow-xl">
-                <h2 className="text-xl font-semibold mb-6">Alterar senha</h2>
+                <h2 className="text-xl font-semibold mb-6">
+                  Alterar senha
+                </h2>
 
                 <Label>Nova senha</Label>
                 <Input
@@ -216,7 +211,6 @@ export default function Telaconfig() {
                   type="password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="Digite a nova senha"
                   className="rounded-full mb-4 bg-gray-300"
                 />
 
@@ -225,17 +219,21 @@ export default function Telaconfig() {
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Digite novamente para confirmar"
                   className="rounded-full mb-4 bg-gray-300"
                 />
 
-                {passError && <p className="text-red-500">{passError}</p>}
+                {passError && (
+                  <p className="text-red-500 text-sm">{passError}</p>
+                )}
 
                 <div className="flex justify-end gap-4 mt-6">
                   <Button variant="ghost" onClick={() => setIsPasswordModalOpen(false)}>
                     Cancelar
                   </Button>
-                  <Button className="bg-[#7c3aed] hover:bg-purple-800" onClick={salvarSenha}>
+                  <Button
+                    className="bg-[#7c3aed] hover:bg-purple-800"
+                    onClick={salvarSenha}
+                  >
                     Salvar
                   </Button>
                 </div>
